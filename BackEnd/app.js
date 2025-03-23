@@ -1,13 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import {connectToSocket} from "./controllers/socketManager.js";
+import {connectToSocket} from "./src/controllers/socketManager.js";
 import express from "express";
 import mongoose, { connect } from "mongoose";
 import { Server } from "socket.io";
 import { createServer } from "node:http";
 import cors from "cors";
-import userRoutes from"./routes/users.routes.js";
+import userRoutes from"./src/routes/users.routes.js";
 import  bodyParser  from 'body-parser';
 
 

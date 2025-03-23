@@ -3,52 +3,47 @@ import httpStatus from 'http-status';
 import { User } from "../model/user.model.js"
 import bcrypt, { hash } from "bcrypt";
 import crypto from "crypto";
-import  bodyParser  from 'body-parser';
+import bodyParser from 'body-parser';
 
 export const login = async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ message: "username and password must be required" });
     }
-    //console.log(username,password);
     try {
 
         const user = await User.findOne({ username })
         if (!user) {
-            return res.status(httpStatus.NOT_FOUND).json({ message: "username not exist" });
+            return res.status(httpStatus.NOT_FOUND).json({ message: "username not exist", success: false });
         }
-        let isPasswordCorrect=await bcrypt.compare(password, user.password);
+        let isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (isPasswordCorrect) {
             let token = crypto.randomBytes(20).toString('hex');
             user.token = token;
             await user.save();
-            return res.status(httpStatus.OK).json({ token: token });
+            return res.status(httpStatus.OK).json({ token: token, success: true, message: "Login Successfull" });
 
-        }else{
-            return res.status(httpStatus.UNAUTHORIZED).json({message:"Invalid username or password"});
+        } else {
+            return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid  password", success: false });
         }
     }
     catch (err) {
-        return res.status(httpStatus.NOT_FOUND).json({ message: `somthing went wrong ${err}` });
+        return res.status(httpStatus.NOT_FOUND).json({ message: err.message, success: false });
     }
 }
 
 
 
 export const register = async (req, res) => {
-   // console.log("req for register");
     const { username, password, name } = req.body;
-    if(!username || !password ||!name){
+    if (!username || !password || !name) {
         return res.send("username, password and name  are required")
     }
-   
-    //console.log(username, password,name)
-
     try {
         const newUser = await User.findOne({ username });
 
         if (newUser) {
-            return res.status(404).json({ message: "user aleardy exist" })
+            return res.status(404).json({ message: "user aleardy exist", success:false })
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
@@ -58,17 +53,11 @@ export const register = async (req, res) => {
             password: hashPassword,
         });
         await newUserPass.save()
-            .then(() => {
-               // console.log(newUser);
-            })
 
-
-      return   res.status(200).json({ message: "userRegister" });
+        return res.status(200).json({ message: "user Register", success: true });
     } catch (err) {
         console.log(err);
-        res.status(404).json({ message: `some thing went wrong ${e}` });
+        res.status(404).json({ message: `some thing went wrong ${e}`, success: false });
     }
 }
 
-//"18eb87954c9411d0b8ad3c510dca5521771751f6"
-///4df8b5cb59a703d2941a708ef8efdab9dd1ecd7b
