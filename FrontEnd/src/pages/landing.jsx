@@ -30,11 +30,14 @@ export function Landing() {
                     </p>
 
 
-                    <Button size='large' color="success" variant='contained' onClick={() => navigate("/auth")} >Get Start</Button>
+                    <Button size='large' color="success" variant='contained'
+                        onClick={() => navigate("/auth")} >Get Start</Button>
 
                 </div>
                 <div className='col-lg-5 col-md-6 col-sm-10 '>
-                    <img className="landingImg" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2sdkyhm3jdW871t6s1tDQhFbXj0G_2Y2xdA&s" alt="" />
+                    <img className="landingImg"
+                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2sdkyhm3jdW871t6s1tDQhFbXj0G_2Y2xdA&s"
+                        alt="" />
                 </div>
             </div>
         </div>

@@ -4,17 +4,21 @@ import axios from "axios";
 import httpStatus from 'http-status';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 export const AuthContext = createContext({})
 
-// const client = axios.create({
-const baseURL = "http://localhost:8080/users"
-// })
+const client = axios.create({
+    baseURL: "http://localhost:8084/users"
+})
 
 export const AuthProvider = ({ children }) => {
 
+    const navigate = useNavigate("");
+
     const authContext = useContext(AuthContext);
+
+    const [isLoading, setIsLoading] = useState(false);
 
     let [userData, setUserData] = useState(authContext);
 
@@ -23,44 +27,43 @@ export const AuthProvider = ({ children }) => {
 
     let handleRegister = async (name, username, password) => {
         try {
-            const registerUrl = `${baseURL}/register`;
-            console.log(registerUrl)
 
-            let request = await axios.post(registerUrl, {
+            console.log(username, password, name)
+
+            let request = await client.post(`/register`, {
                 name,
                 username,
                 password
             })
             console.log("request after api call", request)
-            console.log(request.data)
+
             if (request.data.success) {
-                toast.success("ok")
+                toast.success(request.data.message)
 
                 return request.data;
             } else {
                 toast.error(request.data);
             }
         } catch (err) {
-            toast.error(err)
-            console.log(err.response.data)
-            return err.response.data
+
+            console.log(err)
+            throw err;
         }
     }
 
 
     const handleLogin = async (username, password) => {
         try {
-            const loginUrl = `${baseURL}/login`;
-            let request = await axios.post(loginUrl, {
-                username: username,
-                password: password,
+            console.log(username, password)
+            
+            let request = await client.post(`/login`, {
+                username,
+                password,
             })
             console.log("response after calling ", request)
-            console.log(request.data.message, request.data.success
-            )
             if (request.data.success) {
 
-                localStorage.setItem("token", request.data.token);
+                localStorage.setItem("zoom_token", request.data.token);
 
                 router("/home")
                 toast.success(request.data.message)
@@ -71,15 +74,18 @@ export const AuthProvider = ({ children }) => {
                 return request;
             }
         } catch (err) {
-            toast.error(err)
+
             console.log(err)
+            toast.error(err)
             throw err;
         }
     }
 
 
     const data = {
-        userData, setUserData, handleRegister, handleLogin
+        userData, setUserData, handleRegister, handleLogin,
+        navigate,
+        isLoading, setIsLoading
     }
 
     return (
@@ -88,3 +94,4 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     )
 }
+

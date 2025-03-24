@@ -17,11 +17,13 @@ import InputAdornment from '@mui/material/InputAdornment';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControl from '@mui/material/FormControl';
 import HttpsIcon from '@mui/icons-material/Https';
-import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import { toast } from 'react-hot-toast';
+
 
 function Authentication() {
-    const navigate = useNavigate("");
+
+    const { navigate, handleRegister, handleLogin, isLoading, setIsLoading } = useContext(AuthContext)
 
     let handleSubmit = (event) => {
         event.preventDefault();
@@ -31,7 +33,7 @@ function Authentication() {
         console.log(userInfo)
     }
 
-    let [currState, setCurrState] = useState(0);
+    let [currState, setCurrState] = useState('login');
     let [name, setName] = useState("");
     let [userName, setUserName] = useState("");
     let [password, setPassword] = useState("");
@@ -39,7 +41,7 @@ function Authentication() {
     let [message, SetMessage] = useState();
     let [open, setOpen] = useState(false);
 
-    const { handleRegister, handleLogin } = useContext(AuthContext)
+
 
 
 
@@ -47,14 +49,16 @@ function Authentication() {
         e.preventDefault();
         console.log(name, password, userName);
         try {
-            if (currState == 0) {
+            setIsLoading(true);
+
+            if (currState == 'login') {
                 //login
                 let result = await handleLogin(userName, password);
 
                 console.log("in authentication file", result);
 
                 if (result.data.success) {
-                    toast.success(result)
+                    toast.success(result.data.message)
                     setUserName("");
                     setError("");
                     setPassword("");
@@ -65,7 +69,7 @@ function Authentication() {
 
 
             } else
-                if (currState === 1) {
+                if (currState === 'signup') {
                     //register
                     let result = await handleRegister(name, userName, password);
                     console.log(result);
@@ -77,23 +81,26 @@ function Authentication() {
                         setUserName("");
                         setPassword("");
                         navigate("/home")
-                    }else{
+                    } else {
                         setError(result.message)
-                        toast.error("ok")
+                        toast.error(result.message)
                     }
 
 
                 }
         } catch (err) {
-            toast.error(err)
-            console.log(err)
-            return;
+            let mesage=err.response.data.message;
+            console.log(message);
+            toast.error(message)
 
+
+        } finally {
+            setIsLoading(false);
         }
     }
 
 
-
+    // password show 
     const [showPassword, setShowPassword] = React.useState(false);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -130,20 +137,25 @@ function Authentication() {
 
 
     return (
-        <div className="m-5">
-            <div className="authentiactionPage mt-3  m-auto p-5" style={{ borderRadius: "2rem", backgroundColor: "gray" }}>
-                <h2>You need to Login <HttpsIcon sx={{ color: "black", fontSize: "2rem" }} /> </h2>
-                <Button className="m-2" variant={currState == 0 ? "contained" : "text"} onClick={() => { setCurrState(0) }} >
+        <div className="  min-h-screen w-full  p-3 bg-green-200  border border-green-800 items-center">
+            <div className="authentiactionPage mt-3   p-5 rounded-3xl bg-gray-400  "
+            >
+                <h2 className="text-3xl font-semibold w-fit mx-auto my-3" >You need to {currState} <HttpsIcon sx={{ color: "black", fontSize: "2rem" }} /> </h2>
+                <Button className="m-2  "
+                    variant={currState == 'login' ? "contained" : "text"}
+                    onClick={() => { setCurrState('login') }} >
                     Log in
                 </Button>
-                <Button className="m-2" variant={currState == 1 ? "contained" : "text"} onClick={() => { setCurrState(1) }}>
+                <Button className="m-2"
+                    variant={currState == 'signup' ? "contained" : "text"}
+                    onClick={() => { setCurrState('signup') }}>
                     Register
                 </Button>
-                <div>
-                    <form className=" needs-validation" >
+                <div className="w-full" >
+                    <form className=" needs-validation flex flex-col w-full gap-2 " onSubmit={handleAuth}  >
 
 
-                        {currState == 1 && (<TextField
+                        {currState == 'signup' && (<TextField
                             sx={{ fontSize: "1rem" }}
                             id="outlined-multiline-flexible"
                             label="Full Name"
@@ -153,7 +165,10 @@ function Authentication() {
                             onChange={(e) => { setName(e.target.value) }}
                             size="small"
                             value={name}
-                        />)} <br />
+                            className="max-w-3xl"
+                        />)}
+
+
                         <TextField
                             sx={{ fontSize: "1rem" }}
                             id="outlined-multiline-flexible"
@@ -164,9 +179,10 @@ function Authentication() {
                             onChange={(e) => { setUserName(e.target.value) }}
                             size="small"
                             value={userName}
-                        /> <br />
+                            className="max-w-3xl  "
+                        />
 
-                        <FormControl sx={{ m: 1, width: '25ch' }} variant="outlined">
+                        <FormControl className="w-full" variant="outlined">
                             <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
                             <OutlinedInput
                                 id="outlined-adornment-password"
@@ -176,6 +192,7 @@ function Authentication() {
                                 fullWidth
                                 onChange={(e) => { setPassword(e.target.value) }}
                                 value={password}
+                                className="max-w-3xl"
                                 endAdornment={
                                     <InputAdornment position="end">
                                         <IconButton
@@ -196,7 +213,6 @@ function Authentication() {
                         </FormControl>
 
 
-                        <br />
                         {
                             currState == 0 && <p className="forgotPassword" style={{ color: "blue" }} onClick={() => navigate("/reset-password")} >Forgot Password</p>
                         }
@@ -206,7 +222,7 @@ function Authentication() {
                         <div className="col-12">
                             <div className="form-check">
                                 <input className="form-check-input" type="checkbox" value="" id="invalidCheck" required />
-                                <label className="form-check-label" htmlFor="invalidCheck">
+                                <label className="form-check-label text-sm" htmlFor="invalidCheck">
                                     Agree to terms and conditions
                                 </label>
                                 <div className="invalid-feedback">
@@ -214,21 +230,22 @@ function Authentication() {
                                 </div>
                             </div>
                         </div>
-                        <Button type="submit" variant="outlined" onClick={handleAuth}  >
-                            {currState == 0 ? "Sign in" : "Register"}
-                        </Button>
+                        <button type="submit" className="bg-blue-600 btn  text-white  " disabled={isLoading}  >
+                            {
+                                isLoading &&
+                                <RotateLeftIcon className="animate-spin" />
+                            }
+
+                            {currState == 'login' ? "Sign in" : "Register"}
+                        </button>
 
 
 
                     </form>
                 </div>
-                {/* <Snackbar
-                    open={open}
-                    autoHideDuration={4000}
-                    message={message}
-                /> */}
 
-            </div >
+
+            </div>
         </div >
     );
 }

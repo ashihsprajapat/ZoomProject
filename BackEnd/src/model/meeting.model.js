@@ -18,4 +18,4 @@ const meetingSchema=new Schema({
 
 const Meeting=model("Meeting",meetingSchema);
 
-export {Meeting};
+export default Meeting;

@@ -3,12 +3,14 @@ import "./videoMeetStyle.css"
 import TextField from '@mui/material/TextField';
 import { Button } from '@mui/material';
 
-const server_url = "http://localhost:8080";
+const server_url = "http://localhost:8084";
 var connections = {};
+
+//var connections ={} eshe eshe kiya hai 
 
 const peerConfigConnections = {
     "iceServer": [
-        { "urls": "stun:stun.l.google.com:1932" }
+        { "urls": "stun:stun.l.google.com:19302" }  //stun server use for your ip address as public internet which return ip address
     ]
 }
 import "../style/videoComponenet.css"
@@ -22,34 +24,35 @@ export default function VideoMeetComponent() {
 
     let localVideoRef = useState();
 
-    let [videoAvailable, setVideoAvailable] = useState(true);
+    let [videoAvailable, setVideoAvailable] = useState(true); //take permition to hardware then check if awailable or not
 
-    let [audioAvailable, setAudioAvailable] = useState(true);
+    let [audioAvailable, setAudioAvailable] = useState(true);// same 
 
-    let [video, setVideo] = useState([]);
+    let [video, setVideo] = useState([]); //video on off handle by this
 
-    let [audio, setAudio] = useState();
+    let [audio, setAudio] = useState();//same for audio
 
-    let [screen, setScreen] = useState();
+    let [screen, setScreen] = useState(); //same for screen sharing
 
-    let [showModel, setShowModel] = useState();
+    let [showModel, setShowModel] = useState(); //pop the msg typing
 
     let [screenAvailable, setScreenAvailable] = useState();
 
-    let [messages, setMessages] = useState("");
+    let [messages, setMessages] = useState([]); //alll messages
 
-    let [message, setMessage] = useState([]);
+    let [message, setMessage] = useState(""); //write msg and send then add to messages
 
-    let [newMessage, setNewMessage] = useState(0);
+    let [newMessage, setNewMessage] = useState(0);// that show count as notification
 
-    let [askForUsername, setAskForUsername] = useState(true);
+    let [askForUsername, setAskForUsername] = useState(true);//login as guest then take username
 
-    let [username, setUsername] = useState();
+    let [username, setUsername] = useState("");
 
     const videoRef = useRef([]);
 
     let [videos, setVideos] = useState([]);
 
+    //todo
     // if(isChrome()===false){
 
     // }
@@ -65,6 +68,7 @@ export default function VideoMeetComponent() {
             }
 
         } catch (err) {
+            console.log(err)
 
         }
     }
@@ -102,11 +106,11 @@ export default function VideoMeetComponent() {
         }
     }
 
-    let getUserMediaSuccess = (stream) => {
-        try{
+    let getUserMediaSuccess = (stream) => {  // jeb me video band kiya tab sabi se hat jana chahiye
+        try {
             window.localStram
 
-        }catch(e){
+        } catch (e) {
             console.log(e)
         }
 
@@ -115,16 +119,17 @@ export default function VideoMeetComponent() {
     let getPermisson = async () => {
         try {
 
+
         } catch (err) {
             console.log(err);
         }
     }
 
-    let getUserMedia = () => {
+    let getUserMedia = () => { //when we mute the audio then cut sound and when stop video then stop handle by this
         if ((video && videoAvailable) || (audio && audioAvailable)) {
-            navigator.mediaDevices.getUserMedia({ video: video, audio: audio })
-                .then(getUserMediaSuccess)//getusreMedia success
-                .then((stream) => { })
+            navigator.mediaDevices.getUserMedia({ video: video, audio: audio }) //make it as promiss
+                .then(getUserMediaSuccess)// todo getusreMedia success
+                .then((stream) => { })  //refresh stram
                 .catch((e) => console.log(e))
         } else {
             try {
@@ -186,16 +191,17 @@ export default function VideoMeetComponent() {
     }
 
     let connectToSocketServer = () => {
+
         socketRef.current = io.connect(server_url, { secure: false });
 
-        socketRef.current.on('signal', gotMessageFromServer);
+        socketRef.current.on('signal', gotMessageFromServer); //get message after socket connected
 
         socketRef.current.on("connect", () => {
             socketRef.current.emit("join-call", window.location.href);
 
-            socketIdRef.current = socketRef.current.id;
+            socketIdRef.current = socketRef.current.id;// store socket.id
 
-            socketRef.current.on("chat-messagae", addMessage())
+            socketRef.current.on("chat-messagae", addMessage) //add new Message 
 
             socketRef.current.on('user-left', (id) => {
                 setVideo((videos) => videos.filter((video) => video.socketId !== id))
@@ -287,7 +293,7 @@ export default function VideoMeetComponent() {
     let getMedia = () => {
         setVideo(videoAvailable);
         setAudio(audioAvailable);
-        // getMedia
+        // getUserMedia
         connectToSocketServer();
     }
 
@@ -299,24 +305,29 @@ export default function VideoMeetComponent() {
     return (
         <div>
 
-            {/* <h2>Video Meet Componenets{window.location.href}</h2> */}
+            {/* <h2>Video Meet Componenets {window.location.href}</h2>
+            <h2>{window.location.port}</h2> */}
 
             {askForUsername === true ?
-                <div className='vidoMeet' >
+                <div className='vidoMeet  border-2 p-5 border-gray-800 ' >
 
-                    <h2>Enter into lobby</h2>
+                    <h2 className='text-2xl'>Enter into lobby</h2>
                     <TextField
                         id="outlined-multiline-flexible"
                         label="@username"
                         size='small'
                         required
-                        className='m-2'
+                        className='m-2  max-w-xl'
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         maxRows={4}
+
                     />
                     <br />
-                    <Button variant="contained" size='small' className='m-2' onClick={connect} >Connect</Button>
+                    <Button variant="contained"
+                        size='small'
+                        className='m-2'
+                        onClick={connect} >Connect</Button>
 
                     <div className='border'>
                         <video ref={localVideoRef} autoPlay muted ></video>

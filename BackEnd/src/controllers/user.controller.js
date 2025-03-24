@@ -16,12 +16,12 @@ export const login = async (req, res) => {
         if (!user) {
             return res.status(httpStatus.NOT_FOUND).json({ message: "username not exist", success: false });
         }
-        let isPasswordCorrect = await bcrypt.compare(password, user.password);
-        if (isPasswordCorrect) {
+        let match = await bcrypt.compare(password, user.password);
+        if (match) {
             let token = crypto.randomBytes(20).toString('hex');
             user.token = token;
             await user.save();
-            return res.status(httpStatus.OK).json({ token: token, success: true, message: "Login Successfull" });
+            return res.status(httpStatus.OK).json({ token: token, user, success: true, message: "Login Successfull" });
 
         } else {
             return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid  password", success: false });
@@ -35,24 +35,26 @@ export const login = async (req, res) => {
 
 
 export const register = async (req, res) => {
+
     const { username, password, name } = req.body;
+
     if (!username || !password || !name) {
         return res.send("username, password and name  are required")
     }
     try {
-        const newUser = await User.findOne({ username });
+        const userExist = await User.findOne({ username });
 
-        if (newUser) {
-            return res.status(404).json({ message: "user aleardy exist", success:false })
+        if (userExist) {
+            return res.status(404).json({ message: "user aleardy exist", success: false })
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
-        const newUserPass = new User({
-            name: name,
-            username: username,
+        const user = new User({
+            name,
+            username,
             password: hashPassword,
         });
-        await newUserPass.save()
+        await user.save()
 
         return res.status(200).json({ message: "user Register", success: true });
     } catch (err) {
